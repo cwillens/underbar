@@ -321,15 +321,65 @@
   // _.memoize should return a function that, when called, will check if it has
   // already computed the result for the given argument and return that value
   // instead if possible.
+
+  //The test that's failing is failing because I didn't write a case for arrays, cause the
+  //instructions say we can assume the function only takes primitives as arguments... come
+  //back to this issue
   _.memoize = function(func) {
     var argumentsSoFar = [];
+    var runWithArgs=false;
+    var argumentsIndex;
+    var resultsList=[];
+
+    return function() {
+      //check if function has already been run with these arguments
+      var result;
+
+      if (argumentsSoFar.length>0) {
+        for (var j=0; j<argumentsSoFar.length; j++){
+          var count=0;
+          for (var i=0; i<arguments.length; i++) {
+            if (arguments[i] !== argumentsSoFar[j][i]) count++;
+          }
+          if (count===0) {
+            runWithArgs=true;
+            argumentsIndex=j;
+          } 
+        }
+      }
+      if (runWithArgs===false) {
+        result=func.apply(this, arguments);
+        resultsList.push(result);
+        argumentsSoFar.push(arguments);
+      }
+      else {
+        result=resultsList[argumentsIndex];
+      }
+      return result;
+
+    };
+};
+
+  /*  var argumentsSoFar = [];
     var result;
 
     return function() {
+      //check if function has already been run with these arguments
+      var runWithArgs=true;
+      for (var j=0; j<argumentsSoFar.length; j++){
+        for (var i=0; i<arguments.length; i++) {
+          if (arguments[i] !== argumentsSoFar[j][i]) runWithArgs=false;
+        }
+      }
+      if (runWithArgs===false) {
+        result=func.apply(this, arguments);
+        argumentsSoFar.push(arguments);
+      }
+      return result;
 
-    }
+    };
 
-  };
+  };*/
 
   // Delays a function for the given number of milliseconds, and then calls
   // it with the arguments supplied.
@@ -338,6 +388,11 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    var args=[];
+    for (var i=2; i<arguments.length; i++) {
+      args.push(arguments[i]);
+    }
+    return setTimeout(function() {return func.apply(this, args)}, wait);
   };
 
 
