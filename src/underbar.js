@@ -331,6 +331,25 @@
     var argumentsIndex;
     var resultsList=[];
 
+    /* a function that tests if arrays are equal (also works for numbers and 
+    strings, null, anything you can check with a "===") -- necessary to pass "should not run memoize function twice
+    when given a reference type as an argument" */
+    var arrayEquals = function(a, b) {
+        if (typeof a === 'object' && typeof b === 'object') {
+            var aKeys = Object.keys(a);
+            var bKeys = Object.keys(b);
+            if (aKeys.length !== bKeys.length) return false;
+            for (var i=0; i<aKeys.length; i++) {
+                if (a[aKeys[i]]!== b[bKeys[i]]) return false;
+            }
+        }
+        else {
+            if (a===b) return true;
+            else return false;
+        }
+    };
+
+
     return function() {
       //check if function has already been run with these arguments
       var result;
@@ -339,7 +358,7 @@
         for (var j=0; j<argumentsSoFar.length; j++){
           var count=0;
           for (var i=0; i<arguments.length; i++) {
-            if (arguments[i] !== argumentsSoFar[j][i]) count++;
+            if (arrayEquals(arguments[i], argumentsSoFar[j][i])===false) count++;
           }
           if (count===0) {
             runWithArgs=true;
@@ -360,26 +379,7 @@
     };
 };
 
-  /*  var argumentsSoFar = [];
-    var result;
 
-    return function() {
-      //check if function has already been run with these arguments
-      var runWithArgs=true;
-      for (var j=0; j<argumentsSoFar.length; j++){
-        for (var i=0; i<arguments.length; i++) {
-          if (arguments[i] !== argumentsSoFar[j][i]) runWithArgs=false;
-        }
-      }
-      if (runWithArgs===false) {
-        result=func.apply(this, arguments);
-        argumentsSoFar.push(arguments);
-      }
-      return result;
-
-    };
-
-  };*/
 
   // Delays a function for the given number of milliseconds, and then calls
   // it with the arguments supplied.
@@ -407,6 +407,31 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+  	var orderHolder = {};
+  	var shuffledArray=[];
+
+  	/* create an object that assigns each array element a random order number */
+  	for (var i=0; i<array.length; i++) {
+  		var item=[];
+  		item.push(array[i]);
+  		item.push(Math.random());
+  		orderHolder[i]=item;
+  	}
+
+  	
+  	for (var i=0; i<array.length; i++) {
+  		var current=1;
+  		var nextUp=-1;
+  		for (var j=0; j<array.length; j++) {
+  			if (orderHolder[j][1]<current) {
+  				current=orderHolder[j][1];
+  				nextUp=j;
+  			}
+  		}
+  		shuffledArray.push(orderHolder[nextUp][0]);
+  		orderHolder[nextUp][1]=2;
+  	}
+  	return shuffledArray;
   };
 
 
